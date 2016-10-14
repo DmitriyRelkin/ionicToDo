@@ -46,8 +46,8 @@
             <label class="checkbox">
               <input type="checkbox" ng-model="task.done"/>
             </label>
-            <span class="title">{{task.title}}</span>
-            <i class="icon ion-close-circled deleteitem"></i>
+            <span class="title" ng-click='todo.openTask($index)'>{{task.title}}</span>
+            <i class="icon ion-close-circled deleteitem" ng-click='todo.deleteTask($index)'></i>
           </ion-item>
         </ion-list>
       </ion-content>

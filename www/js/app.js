@@ -36,18 +36,22 @@ angular
 angular
 .module('ToDO')
 .controller('ToDoCtrl', ToDoCtrl);
-ToDoCtrl.$inject = ['$scope', '$ionicModal']
-function ToDoCtrl($scope, $ionicModal) {
+ToDoCtrl.$inject = ['$scope', '$ionicModal', '$window']
+function ToDoCtrl($scope, $ionicModal, $window) {
 
   var vm = this;
 
   vm.addNewTask = addNewTask;
+  vm.openTask = openTask;
+  vm.deleteTask = deleteTask;
 
-  vm.tasks = [
-    { title: 'testTitle1', description: 'testDescription1', done:false },
-    { title: 'testTitle2', description: 'testDescription2', done:true },
-    { title: 'testTitle3', description: 'testDescription3', done:false }
-  ];
+  if(!angular.isUndefined($window.localStorage.getItem['tasks'])) {
+    vm.tasks = JSON.parse($window.localStorage.getItem['tasks']);
+  } else {
+    vm.tasks = [
+      { title: 'testTitle1', description: 'testDescription1', done:false },
+    ];
+  }
 
   $ionicModal.fromTemplateUrl('views/task.html', function(modal) {
     vm.taskModal = modal;
@@ -56,11 +60,53 @@ function ToDoCtrl($scope, $ionicModal) {
     animation: 'slide-in-up'
   });
 
+  $scope.currentTaskId = -1;
+
   function addNewTask() {
     vm.taskModal.show();
+    $scope.activeTask = {
+      title: '',
+      description: '',
+      done: false
+    }
+    $scope.currentTaskId = -1;
   };
 
   $scope.closeTask = function() {
     vm.taskModal.hide();
   };
+
+  function openTask(id) {
+    var task = vm.tasks[id];
+    $scope.currentTaskId = id;
+    $scope.activeTask = {
+      title: task.title,
+      description: task.description,
+      done: task.done
+    }
+    vm.taskModal.show();
+  };
+
+  function deleteTask(id) {
+    vm.tasks.splice(id, 1);
+    $window.localStorage.setItem['tasks'] = angular.JSON.stringify(vm.tasks);
+  };
+
+  $scope.submitTask = function(task) {
+    if ($scope.currentTaskId == -1) {
+      vm.tasks.push({
+        title: task.title,
+        description: task.description,
+        done: task.done
+      });
+    } else {
+      var id = $scope.currentTaskId;
+      vm.tasks[id].title = task.title;
+      vm.tasks[id].description = task.description;
+      vm.tasks[id].done = task.done;
+    }
+    $window.localStorage.setItem['tasks'] = angular.toJson(vm.tasks);
+    console.log( localStorage.getItem('tasks') );
+    vm.taskModal.hide();
+  }
 };
