@@ -41,17 +41,15 @@ function ToDoCtrl($scope, $ionicModal, $window) {
 
   var vm = this;
 
+  vm.tasks = [];
   vm.addNewTask = addNewTask;
   vm.openTask = openTask;
   vm.deleteTask = deleteTask;
 
-  if(!angular.isUndefined($window.localStorage.getItem['tasks'])) {
-    vm.tasks = JSON.parse($window.localStorage.getItem['tasks']);
-  } else {
-    vm.tasks = [
-      { title: 'testTitle1', description: 'testDescription1', done:false },
-    ];
-  }
+  if($window.localStorage.getItem('tasks') != null) {
+    vm.tasks = JSON.parse($window.localStorage.getItem('tasks'));
+    console.log( localStorage.getItem('tasks'));
+  };
 
   $ionicModal.fromTemplateUrl('views/task.html', function(modal) {
     vm.taskModal = modal;
@@ -89,7 +87,7 @@ function ToDoCtrl($scope, $ionicModal, $window) {
 
   function deleteTask(id) {
     vm.tasks.splice(id, 1);
-    $window.localStorage.setItem['tasks'] = angular.JSON.stringify(vm.tasks);
+    $window.localStorage.setItem('tasks', JSON.stringify(vm.tasks));
   };
 
   $scope.submitTask = function(task) {
@@ -105,8 +103,36 @@ function ToDoCtrl($scope, $ionicModal, $window) {
       vm.tasks[id].description = task.description;
       vm.tasks[id].done = task.done;
     }
-    $window.localStorage.setItem['tasks'] = angular.toJson(vm.tasks);
-    console.log( localStorage.getItem('tasks') );
+    $window.localStorage.setItem('tasks', JSON.stringify(vm.tasks));
     vm.taskModal.hide();
   }
 };
+
+angular
+.module('ToDO')
+.filter('unique', function() {
+   // we will return a function which will take in a collection
+   // and a keyname
+   return function(collection, keyname) {
+      // we define our output and keys array;
+      var output = [],
+          keys = [];
+
+      // we utilize angular's foreach function
+      // this takes in our original collection and an iterator function
+      angular.forEach(collection, function(item) {
+          // we check to see whether our object exists
+          var key = item[keyname];
+          // if it's not already part of our keys array
+          if(keys.indexOf(key) === -1) {
+              // add it to our keys array
+              keys.push(key);
+              // push this item to our final output array
+              output.push(item);
+          }
+      });
+      // return our array which should be devoid of
+      // any duplicates
+      return output;
+   };
+});
